@@ -1,0 +1,86 @@
+<apex:page id="HOSP_SoapUpdateDoctor" controller="HOSP_SoapDoctorManagerController" lightningStyleSheets="true"
+           showHeader="false" sidebar="false">
+    <apex:slds />
+    <div class="slds-scope">
+        <apex:form id="updateForm">
+            <div role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
+                 aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <apex:pageMessages ></apex:pageMessages>
+                    <div class="slds-modal__header">
+                        <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">{!$Label.UpdateDoctor}</h2>
+                    </div>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <apex:pageMessages id="updatePageMsg"></apex:pageMessages>
+                        <div class="slds-grid slds-wrap" styleClass="slds-text-align_center">
+                            <div class="slds-col slds-size_1-of-2">
+                                <div class="slds-form-element slds-box_x-small">
+                                    <label class="slds-form-element__label" for="text-input-id-1">
+                                        <abbr class="slds-required" title="required">* </abbr>{!$Label.FirstName}
+                                    </label>
+                                    <div class="slds-form-element__control">
+                                        <apex:inputField id="firstName" styleClass="slds-input"
+                                                         value="{!updateDoctor.First_Name__c}"
+                                                         required="true"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                                <div class="slds-form-element slds-box_x-small">
+                                    <label class="slds-form-element__label" for="text-input-id-1">
+                                        <abbr class="slds-required" title="required">* </abbr>{!$Label.LastName}</label>
+                                    <div class="slds-form-element__control">
+                                        <apex:inputField id="lastName" styleClass="slds-input"
+                                                         value="{!updateDoctor.Name}"
+                                                         required="true"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                                <div class="slds-form-element slds-box_x-small">
+                                    <label class="slds-form-element__label" for="text-input-id-1">
+                                        <abbr class="slds-required" title="required">* </abbr>{!$Label.CountryName}
+                                    </label>
+                                    <div class="slds-form-element__control">
+                                        <apex:inputField id="country" styleClass="slds-input"
+                                                         value="{!updateDoctor.Country__c}" required="true"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                                <div class="slds-form-element slds-box_x-small">
+                                    <label class="slds-form-element__label" for="text-input-id-1">
+                                        <abbr class="slds-required" title="required">* </abbr>{!$Label.Specialty}
+                                    </label>
+                                    <div class="slds-form-element__control">
+                                        <apex:inputField id="specialty" styleClass="slds-input"
+                                                         value="{!updateDoctor.Specialty__c}"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                                <div class="slds-form-element slds-box_x-small">
+                                    <label class="slds-form-element__label"
+                                           for="text-input-id-1">{!$Label.Email}</label>
+                                    <div class="slds-form-element__control">
+                                        <apex:inputField id="mail" styleClass="slds-input"
+                                                         value="{!updateDoctor.Email__c}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="slds-modal__footer">
+                        <apex:commandButton value="{!$Label.Save}" styleClass="slds-button slds-button_brand"
+                                            action="{!updateDoctors}" reRender="theForm, modal-content-id-1, updatePageMsg"
+                                            status="spinner" onComplete="closeDoctorUpdateModal({!shouldCloseUpdateDoctorModal});"/>
+                        <apex:commandButton value="{!$Label.Close}" styleClass="slds-button slds-button_outline-brand"
+                                            action="{!clearDoctor}" reRender="none" immediate="true"
+                                            onClick="closeDoctorUpdateModal(true); return false;"/>
+                    </div>
+                </div>
+            </div> 
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </apex:form>
+    </div>
+</apex:page>

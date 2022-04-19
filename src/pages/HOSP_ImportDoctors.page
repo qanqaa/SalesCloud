@@ -1,0 +1,60 @@
+<apex:page id="HOSP_ImportDoctors" controller="HOSP_ImportDoctorsController">
+    <apex:form >
+        <apex:pagemessages />
+        <apex:sectionHeader title="{!$Label.Import_doctors}"/>
+        <apex:pageBlock >
+            <apex:pageBlockSection columns="2">
+                <apex:inputFile value="{!csvFileBody}" accept=".csv" filename="{!csvAsString}"/>
+                <apex:commandButton id="btn" value="{!$Label.Process}" action="{!importCSVFile}"
+                                    style="float: right; width: 120px;"/>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+    </apex:form>
+    <apex:form >
+        <apex:pageBlock rendered="{!IF(wrappedDoctors.size>0, true, false)}">
+            <apex:pageBlockSection columns="1">
+                <apex:pageBlockSectionItem >
+                    <apex:pageblocktable value="{!wrappedDoctors}" var="doc" id="importDoctorPage">
+                        <apex:column headerValue="{!$Label.Select}">
+                            <apex:inputCheckbox value="{!doc.isSelected}"/>
+                        </apex:column>
+                        <apex:column value="{!doc.doctor.First_Name__c}"/>
+                        <apex:column value="{!doc.doctor.Name}"/>
+                        <apex:column value="{!doc.doctor.Email__c}"/>
+                        <apex:column headerValue="{!$Label.Status}">
+                            <apex:outputText value="{!doc.status}"/>
+                            <apex:commandLink target="_blank" action="/apex/HOSP_ViewDoctor?id={!doc.doctor.id}"
+                                              value="{!$Label.View}"
+                                              rendered="{!IF(doc.status=='Success!', true, false)}"
+                                              style="margin-left: 5px;">
+                                <apex:param assignTo="{!doc.doctor.Id}" name="{!doc.doctor.Id}"
+                                            value="{!doc.doctor.Id}"/>
+                            </apex:commandLink>
+                        </apex:column>
+                    </apex:pageblocktable>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:panelGrid columns="4">
+                        <apex:commandButton value="{!$Label.All}" reRender="importDoctorPage" style="width: 60px;"
+                                            action="{!selectAllDoctors}"/>
+                        <apex:commandButton value="{!$Label.None}" reRender="importDoctorPage" style="width: 60px;"
+                                            action="{!unSelectAllDoctors}"/>
+                        <apex:commandButton value="{!$Label.Reverse}" reRender="importDoctorPage" style="width: 60px;"
+                                            action="{!reverseSelectAllDoctors}"/>
+                    </apex:panelGrid>
+                    <apex:commandButton value="{!$Label.Import}" reRender="importDoctorPage" status="spinner"
+                                        style="float: right; width: 120px;" action="{!importSelectedDoctors}"/>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+        <apex:actionStatus id="spinner">
+            <apex:facet name="start">
+                <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.80; z-index: 1000; background-color: white;">
+                </div>
+                <div style="position: fixed; left: 0; top: 0; bottom: 0; right: 0; z-index: 1001; margin: 10% 50%">
+                    <img src="{!$Resource.Spinner}"/>
+                </div>
+            </apex:facet>
+        </apex:actionStatus>
+    </apex:form>
+</apex:page>

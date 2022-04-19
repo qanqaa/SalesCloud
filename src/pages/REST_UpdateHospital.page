@@ -1,0 +1,54 @@
+<apex:page id="REST_UpdateHospital" controller="REST_HospitalSearcherController" lightningStyleSheets="true"
+           showHeader="false" sidebar="false">
+    <apex:slds />
+    <div class="slds-scope">
+        <apex:form id="updateForm">
+            <div role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
+                 aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <div class="slds-modal__header">
+                        <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">{!$Label.UpdateHospital}</h2>
+                    </div>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <apex:pageMessages id="updatePageMsg"></apex:pageMessages>
+                        <div class="slds-grid slds-wrap" styleClass="slds-text-align_center">
+                            <div class="slds-col slds-size_1-of-2">
+                                <div class="slds-form-element slds-box_x-small">
+                                    <label class="slds-form-element__label" for="text-input-id-1">
+                                        <abbr class="slds-required" title="required">* </abbr>{!$Label.Name}
+                                    </label>
+                                    <div class="slds-form-element__control">
+                                        <apex:inputField id="firstName" styleClass="slds-input"
+                                                         value="{!updateHospital.Name}"
+                                                         required="true"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                                <div class="slds-form-element slds-box_x-small">
+                                    <label class="slds-form-element__label" for="text-input-id-1">
+                                        <abbr class="slds-required" title="required">* </abbr>{!$Label.Address}</label>
+                                    <div class="slds-form-element__control">
+                                        <apex:inputField id="lastName" styleClass="slds-input" value="{!updateHospital.Address__c}"
+                                                         required="true"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="slds-modal__footer">
+                        <apex:commandButton value="{!$Label.Save}" styleClass="slds-button slds-button_brand"
+                                            action="{!updateHospitals}" onComplete="closeHospitalUpdateModal({!shouldCloseUpdateHospitalModal}, {!shouldDisplayToastMsg}); return false;"
+                                            reRender="hospitalsRecords, modal-content-id-1, updatePageMsg"
+                                            status="spinner"/>
+                        <apex:commandButton value="{!$Label.Close}" styleClass="slds-button slds-button_outline-brand"
+                                            action="{!clearHospital}"
+                                            reRender="editForm" immediate="true"
+                                            onComplete="closeHospitalUpdateModal(true, false); return false;"/>
+                    </div>
+                </div>
+            </div>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </apex:form>
+    </div>
+</apex:page>

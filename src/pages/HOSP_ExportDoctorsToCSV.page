@@ -1,0 +1,1 @@
+<apex:page id="HOSP_ExportDoctorsToCSV" controller="HOSP_DoctorController" contentType="text/csv#DoctorList_{!TEXT(NOW())}.csv">{!FileBodyString}</apex:page>

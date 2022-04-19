@@ -1,0 +1,23 @@
+<apex:page id="HOSP_EditDoctor" standardController="Doctor__c" extensions="HOSP_EditDoctorController"
+           tabStyle="Doctor__c">
+    <apex:form >
+        <apex:sectionHeader title="{!$Label.Doctor}" subtitle="{!Doctor__c.Name}"/>
+        <apex:pageBlock title="{!$Label.DoctorEdit}" mode="edit">
+            <apex:pageBlockSection title="{!$Label.Information}" columns="2">
+                <apex:inputField value="{!Doctor__c.Name}" required="true"/>
+                <apex:inputField value="{!Doctor__c.Country__c}"/>
+                <apex:inputField value="{!Doctor__c.First_Name__c}"/>
+                <apex:inputField value="{!Doctor__c.Phone__c}"/>
+                <apex:inputField value="{!Doctor__c.Specialty__c}"/>
+                <apex:inputField value="{!Doctor__c.Birthdate_Date__c}"/>
+                <apex:inputField value="{!Doctor__c.Licence_Number__c}"/>
+                <apex:inputField value="{!Doctor__c.Email__c}"/>
+            </apex:pageBlockSection>
+            <apex:pageBlockButtons >
+                <apex:commandButton value="{!$Label.Save}" action="{!save}"/>
+                <apex:commandButton value="{!$Label.SaveNew}" action="{!saveNew}"/>
+                <apex:commandButton value="{!$Label.Cancel}" action="{!cancel}"/>
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

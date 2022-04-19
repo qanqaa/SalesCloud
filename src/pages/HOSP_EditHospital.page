@@ -1,0 +1,18 @@
+<apex:page id="HOSP_EditHospital" standardController="Hospital__c" extensions="HOSP_EditHospitalController"
+           tabStyle="Hospital__c">
+    <apex:form >
+        <apex:sectionHeader title="{!$Label.Hospital}" subtitle="{!Hospital__c.Name}"/>
+        <apex:pageBlock title="{!$Label.DoctorEdit}" mode="edit">
+            <apex:pageBlockSection title="{!$Label.Information}" columns="2">
+                <apex:inputField value="{!Hospital__c.Name}" required="true"/>
+                <apex:inputField value="{!Hospital__c.Active_Contracts__c}"/>
+                <apex:inputField value="{!Hospital__c.Address__c}"/>
+            </apex:pageBlockSection>
+            <apex:pageBlockButtons >
+                <apex:commandButton value="{!$Label.Save}" action="{!save}"/>
+                <apex:commandButton value="{!$Label.SaveNew}" action="{!saveNew}"/>
+                <apex:commandButton value="{!$Label.Cancel}" action="{!cancel}"/>
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

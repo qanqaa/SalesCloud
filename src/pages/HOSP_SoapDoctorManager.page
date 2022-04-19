@@ -1,0 +1,176 @@
+<apex:page id="HOSP_SoapDoctorManager" lightningStyleSheets="true" controller="HOSP_SoapDoctorManagerController">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <style>
+    .hide-modal{
+        display: none;
+    }
+    </style>
+    <apex:slds />
+    <div class="slds-scope">
+        <apex:form id="theForm">
+            <apex:panelGrid columns="2">
+                <div class="slds-text-heading_large slds-p-vertical_medium">{!$Label.SOAP_Doctor_Manager}</div>
+                <apex:commandButton styleClass="slds-button slds-button--brand" immediate="true"
+                                    value="{!$Label.NewDoctor}" action="{!clearDoctor}"
+                                    onClick="openAddDoctorModal();" reRender="editForm"
+                                    style="float: right; width: 120px; margin: 20px 40px;"/>
+            </apex:panelGrid>
+            <apex:pageBlock id="doctorSearcherPageBlock">
+                <apex:pageBlockSection >
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!$Label.FirstName}" for="firstName"/>
+                        <apex:inputText styleClass="slds-input" id="firstName" value="{!doctor.First_Name__c}"
+                                        style="width: 200px;"/>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!$Label.LastName}" for="lastName"/>
+                        <apex:inputText styleClass="slds-input" id="lastName" value="{!doctor.Name}"
+                                        style="width: 200px;"/>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!$Label.Email}" for="email"/>
+                        <apex:inputText styleClass="slds-input" id="email" value="{!emailAddress}"
+                                        style="width: 200px;"/>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!$Label.CountryName}" for="country"/>
+                        <apex:inputField styleClass="slds-input" id="country" required="true" value="{!doctor.Country__c}"
+                                         style="width: 200px;"/>
+                    </apex:pageBlockSectionItem>
+                </apex:pageBlockSection>
+                <apex:pageBlockSection columns="2">
+                    <apex:pageBlockSectionItem >
+                        <apex:commandButton status="spinner" styleClass="slds-button slds-button--brand"
+                                            action="{!searchDoctors}"
+                                            value="{!$Label.Search}"
+                                            rerender="theForm"
+                                            style="float: right; width: 120px; margin: 10px 0;"/>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:actionRegion >
+                            <apex:commandButton styleClass="slds-button slds-button--neutral" action="{!clearResults}"
+                                                value="{!$Label.Clear}" status="spinner"
+                                                disabled="{!IF(doctors.size!=null, false, true)}"
+                                                rerender="theForm" immediate="true"
+                                                style="float: left; width: 120px; margin: 10px 0;"/>
+                        </apex:actionRegion>
+                    </apex:pageBlockSectionItem>
+                </apex:pageBlockSection>
+                <apex:pageBlockSection >
+                    <h1>
+                        <span class="slds-page-header__title slds-truncate">
+                                {!$Label.Doctors}
+                        </span>
+                    </h1>
+                    <p>Items: {!IF(doctors.size!=null, doctors.size, '0')}</p>
+                    <p>{!IF(doctors.size!=null,'', $Label.NoDoctorsToDisplay)}</p>
+                </apex:pageBlockSection>
+                <apex:pageBlockSection columns="1" id="doctorsFound" rendered="{!IF(doctors.size!=null, true, false)}">
+                    <apex:pageBlockSectionItem >
+                        <apex:pageBlockTable id="doctorsRecords"
+                                             styleClass="slds-table slds-table_cell-buffer slds-table_bordered slds-table_striped"
+                                             value="{!doctors}" var="doctorRecord">
+                            <apex:column style="width: 10%" headerValue="{!$Label.Action}">
+                                <apex:commandLink onClick="openDeleteConfirmationModal();" value="{!$Label.Delete}"
+                                                  rerender="theForm">
+                                    <apex:param assignTo="{!doctorIdToDelete}" name="doctorIdToDelete"
+                                                value="{!doctorRecord.ExternalId__c}"/>
+                                </apex:commandLink>
+                                <apex:commandLink action="{!readDoctorRecord}" value="{!$Label.Update}"
+                                                  onComplete="openDoctorUpdateModal();"
+                                                  reRender="updateForm" style="margin-left: 10px;">
+                                    <apex:param assignTo="{!doctorToUpdate}"
+                                                name="doctorToUpdate"
+                                                value="{!doctorRecord.ExternalId__c}"/>
+                                </apex:commandLink>
+                            </apex:column>
+                            <apex:column value="{!doctorRecord.First_Name__c}"/>
+                            <apex:column value="{!doctorRecord.Name}"/>
+                            <apex:column value="{!doctorRecord.Email__c}"/>
+                            <apex:column value="{!doctorRecord.Country__c}"/>
+                        </apex:pageBlockTable>
+                    </apex:pageBlockSectionItem>
+                </apex:pageBlockSection>
+            </apex:pageBlock>
+            <apex:actionStatus id="spinner">
+                <apex:facet name="start">
+                    <div class="slds-spinner_container"
+                         style="z-index: 100001; position: fixed; top: 0; left: 0; right: 0; bottom: 0;">
+                        <div role="status" class="slds-spinner slds-spinner_medium">
+                            <span class="slds-assistive-text">Loading</span>
+                            <div class="slds-spinner__dot-a"></div>
+                            <div class="slds-spinner__dot-b"></div>
+                        </div>
+                    </div>
+                </apex:facet>
+            </apex:actionStatus>
+        </apex:form>
+    </div>
+    <apex:outputPanel id="addDoctorPanel">
+        <apex:include pageName="HOSP_SoapEditDoctor" id="HOSP_SoapEditDoctor"/>
+    </apex:outputPanel>
+    <apex:outputPanel id="updateDoctorPanel">
+        <apex:include pageName="HOSP_SoapUpdateDoctor" id="HOSP_SoapUpdateDoctor"/>
+    </apex:outputPanel>
+    <apex:outputPanel id="deleteConfirmationPanel">
+        <apex:form >
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
+                     class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <div class="slds-modal__header">
+                        <h1 id="modal-heading-01" class="slds-modal__title slds-hyphenate">{!$Label.DeleteDoctor}</h1>
+                    </div>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <p style="text-align: center">
+                            {!$Label.DeleteConfirmation} 
+                        </p>
+                    </div>
+                    <div class="slds-modal__footer">
+                        <apex:commandButton value="{!$Label.Cancel}" styleClass="slds-button slds-button_outline-brand"
+                                            reRender="editForm" immediate="true"
+                                            onClick="closeDeleteConfirmationModal(); return false;"/>
+                        <apex:commandButton value="{!$Label.Delete}" styleClass="slds-button slds-button_brand"
+                                            action="{!deleteDoctor}" rerender="theForm" status="spinner"
+                                            onComplete="closeDeleteConfirmationModal(); return false;"/>
+                    </div>
+                </div>
+            </section>
+        </apex:form>
+        <div class="slds-backdrop slds-backdrop_open" role="presentation"></div>
+    </apex:outputPanel>
+    <script>
+        j$ = jQuery.noConflict();
+        j$('[id$=addDoctorPanel]').addClass('hide-modal');
+        j$('[id$=updateDoctorPanel]').addClass('hide-modal');
+        j$('[id$=deleteConfirmationPanel]').addClass('hide-modal');
+
+        function openAddDoctorModal() {
+            j$('[id$=addDoctorPanel]').removeClass('hide-modal');
+        }
+
+        function closeAddDoctorModal(shouldCloseAddDoctorModal) {
+            if(shouldCloseAddDoctorModal){
+                j$('[id$=addDoctorPanel]').addClass('hide-modal');
+            }
+            console.log(shouldCloseAddDoctorModal);
+        }
+
+        function openDoctorUpdateModal() {
+            j$('[id$=updateDoctorPanel]').removeClass('hide-modal');
+        }
+
+        function closeDoctorUpdateModal(shouldCloseUpdateDoctorModal) {
+            if(shouldCloseUpdateDoctorModal){
+                j$('[id$=updateDoctorPanel]').addClass('hide-modal');
+            }
+        }
+
+        function openDeleteConfirmationModal() {
+            j$('[id$=deleteConfirmationPanel]').removeClass('hide-modal');
+        }
+
+        function closeDeleteConfirmationModal() {
+            j$('[id$=deleteConfirmationPanel]').addClass('hide-modal');
+        }
+    </script>
+</apex:page>

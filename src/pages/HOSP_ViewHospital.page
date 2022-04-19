@@ -1,0 +1,20 @@
+<apex:page id="HOSP_ViewHospital" standardController="Hospital__c" extensions="HOSP_ViewHospitalController"
+           tabStyle="Hospital__c">
+    <apex:form >
+        <apex:sectionHeader title="{!$Label.Hospital}" subtitle="{!hospital.Name}"/>
+        <apex:pageBlock mode="maindetail" title="{!$Label.HospitalDetail}">
+            <apex:pageBlockSection columns="2">
+                <apex:outputField value="{!hospital.Name}"/>
+                <apex:outputField value="{!hospital.Active_Contracts__c}"/>
+                <apex:outputField value="{!hospital.Address__c}"/>
+            </apex:pageBlockSection>
+            <apex:pageBlockButtons >
+                <apex:commandButton value="{!$Label.Edit}" action="{!edit}"/>
+                <apex:commandButton value="{!$Label.Delete}" action="{!delete}"/>
+                <apex:commandButton value="{!$Label.Clone}"
+                                    action="{!URLFOR($Action.Hospital__c.Clone,Hospital__c.Id)}"/>
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+    </apex:form>
+    <apex:relatedList list="Contracts__r"/>
+</apex:page>

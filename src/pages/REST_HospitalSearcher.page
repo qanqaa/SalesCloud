@@ -1,0 +1,246 @@
+<apex:page id="REST_HospitalSearcher" lightningStyleSheets="true" controller="REST_HospitalSearcherController">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <style>
+    .hide-modal{
+        display: none;
+    }
+
+    </style>
+    <apex:slds />
+        <apex:form id="theForm">
+            <div class="slds-page-header">
+                <div class="slds-page-header__row">
+                    <div class="slds-page-header__col-title">
+                        <div class="slds-media">
+                            <div class="slds-media__figure">
+          <span class="slds-icon_container slds-icon-standard-household">
+            <svg class="slds-icon slds-page-header__icon" aria-hidden="true">
+              <use href="/apexpages/slds/latest/assets/icons/standard-sprite/svg/symbols.svg#household"></use>
+            </svg>
+          </span>
+                            </div>
+                            <div class="slds-media__body">
+                                <div class="slds-page-header__name">
+                                    <div class="slds-page-header__name-title">
+                                        <h1>
+                                            <span class="slds-page-header__title slds-truncate">Hospitals Manager</span>
+                                        </h1>
+                                    </div>
+                                </div>
+                                <p class="slds-page-header__name-meta">REST Integration</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="slds-page-header__col-actions">
+                        <div class="slds-page-header__controls">
+                            <div class="slds-page-header__control">
+                                <ul class="slds-button-group-list">
+                                    <li>
+                                        <apex:commandButton styleClass="slds-button slds-button--neutral" immediate="true"
+                                                            value="{!$Label.New}" action="{!clearHospital}"
+                                                            onClick="openAddHospitalModal();" reRender="editForm"
+                                                            style="float: right; width: 120px;"/>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="demo-only slds-hidden" style="height: 4rem; z-index:9999999999" id='ToastMessage'>
+                <div class="slds-notify_container slds-is-relative">
+                    <div class="slds-notify slds-notify_toast slds-theme_success" role="alert">
+                        <span class="slds-icon_container slds-icon-utility-success slds-m-right_small slds-no-flex slds-align-top">
+                <svg class="slds-icon slds-icon_small" aria-hidden="true">
+                    <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR($Asset.SLDS, 'assets/icons/utility-sprite/svg/symbols.svg#success')}" />
+                </svg>
+            </span>
+                        <div class="slds-notify__content">
+                            <h2 class="slds-text-heading_small "> {!$Label.OperationSucceeded}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <apex:pageBlock id="hospitalSearcherPageBlock">
+                <apex:pageBlockSection >
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!$Label.Name}" for="name"/>
+                        <apex:inputText styleClass="slds-input" id="name" value="{!hospital.Name}"
+                                        style="width: 250px;"/>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!$Label.Address}" for="address"/>
+                        <apex:inputText styleClass="slds-input" id="address" value="{!hospital.Address__c}"
+                                        style="width: 250px;"/>
+                    </apex:pageBlockSectionItem>
+                </apex:pageBlockSection>
+                <apex:pageBlockSection columns="2">
+                    <apex:pageBlockSectionItem >
+                        <apex:commandButton status="spinner" styleClass="slds-button slds-button--brand"
+                                            action="{!searchHospitals}"
+                                            value="{!$Label.Search}"
+                                            rerender="hospitalSearcherPageBlock, ToastMessage"
+                                            style="float: right; width: 120px; margin: 10px 0;"/>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:actionRegion >
+                            <apex:commandButton styleClass="slds-button slds-button--neutral" action="{!clearResults}"
+                                                value="{!$Label.Clear}" status="spinner"
+                                                disabled="{!IF(hospitalsTableWrapper.size!=null, false, true)}"
+                                                rerender="hospitalSearcherPageBlock, ToastMessage" immediate="true"
+                                                style="float: left; width: 120px; margin: 10px 0;"/>
+                        </apex:actionRegion>
+                    </apex:pageBlockSectionItem>
+                </apex:pageBlockSection>
+                <apex:pageBlockSection >
+                    <h1>
+                        <span class="slds-page-header__title slds-truncate">
+                                {!$Label.Hospitals}
+                        </span>
+                    </h1>
+
+                    <p>Items: {!IF(AND(NOT(ISBLANK(hospitalsTableWrapper)),hospitalsTableWrapper.size>0),hospitalsTableWrapper.size,'0')}</p>
+                    <p>{!IF(AND(NOT(ISBLANK(hospitalsTableWrapper)),hospitalsTableWrapper.size>0),'',$Label.NoHospitalsToDisplay)}</p>
+                </apex:pageBlockSection>
+                <apex:pageBlockSection columns="1" id="hospitalsFound" rendered="{!IF(AND(NOT(ISBLANK(hospitalsTableWrapper)),hospitalsTableWrapper.size>0),true,false)}">
+                    <apex:pageBlockSectionItem >
+                        <apex:pageBlockTable id="hospitalsRecords"
+                                             styleClass="slds-table slds-table_cell-buffer slds-table_bordered slds-table_striped"
+                                             value="{!hospitalsTableWrapper}" var="hospitalRecord">
+                            <apex:column style="width: 10%" headerValue="{!$Label.Action}">
+                                <apex:commandLink onClick="openDeleteConfirmationModal();" value="{!$Label.Delete}"
+                                                  rerender="hospitalSearcherPageBlock, hospitalsRecords">
+                                    <apex:param assignTo="{!hospitalIdToDelete}" name="hospitalIdToDelete"
+                                                value="{!hospitalRecord.hospitalId}"/>
+                                    <apex:param assignTo="{!hospitalIdToDeleteExternal}" name="hospitalIdToDeleteExternal"
+                                                value="{!hospitalRecord.externalId}"/>
+                                </apex:commandLink>
+                                <apex:commandLink action="{!readHospitalRecord}" value="{!$Label.Update}"
+                                                  onComplete="openHospitalUpdateModal();"
+                                                  reRender="updateForm" style="margin-left: 10px;">
+                                    <apex:param assignTo="{!hospitalIdToUpdate}"
+                                                name="hospitalToUpdate"
+                                                value="{!hospitalRecord.hospitalId}"/>
+                                    <apex:param assignTo="{!hospitalIdToUpdateExternal}"
+                                                name="hospitalToUpdateExternal"
+                                                value="{!hospitalRecord.externalId}"/>
+                                </apex:commandLink>
+                            </apex:column>
+                            <apex:column headerValue="{!$Label.Name}" value="{!hospitalRecord.name}"/>
+                            <apex:column headerValue="{!$Label.Address}" value="{!hospitalRecord.address}"/>
+                            <apex:column headerValue="{!$Label.IORG}">
+                                <apex:inputCheckbox value="{!hospitalRecord.IOrg}" disabled="true"/>
+                            </apex:column>
+                            <apex:column headerValue="{!$Label.IiORG}">
+                                <apex:inputCheckbox value="{!hospitalRecord.IIOrg}" disabled="true"/>
+                            </apex:column>
+                        </apex:pageBlockTable>
+                    </apex:pageBlockSectionItem>
+                </apex:pageBlockSection>
+            </apex:pageBlock>
+            <apex:actionStatus id="spinner">
+                <apex:facet name="start">
+                    <div class="slds-spinner_container"
+                         style="z-index: 100001; position: fixed; top: 0; left: 0; right: 0; bottom: 0;">
+                        <div role="status" class="slds-spinner slds-spinner_medium">
+                            <span class="slds-assistive-text">Loading</span>
+                            <div class="slds-spinner__dot-a"></div>
+                            <div class="slds-spinner__dot-b"></div>
+                        </div>
+                    </div>
+                </apex:facet>
+            </apex:actionStatus>
+        </apex:form>
+    <apex:outputPanel id="addHospitalPanel">
+        <apex:include pageName="REST_CreateHospital" id="REST_CreateHospital"/>
+    </apex:outputPanel>
+    <apex:outputPanel id="updateHospitalPanel">
+        <apex:include pageName="REST_UpdateHospital" id="REST_UpdateHospital"/>
+    </apex:outputPanel>
+    <apex:outputPanel id="deleteConfirmationPanel">
+        <apex:form >
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
+                     class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <div class="slds-modal__header">
+                        <h1 id="modal-heading-01" class="slds-modal__title slds-hyphenate">{!$Label.DeleteHospital}</h1>
+                    </div>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <p style="text-align: center">
+                                {!$Label.DeleteConfirmation}
+                        </p>
+                    </div>
+                    <div class="slds-modal__footer">
+                        <apex:commandButton value="{!$Label.Cancel}" styleClass="slds-button slds-button_outline-brand"
+                                            reRender="editForm" immediate="true"
+                                            onClick="closeDeleteConfirmationModal(false); return false;"/>
+                        <apex:commandButton value="{!$Label.Delete}" styleClass="slds-button slds-button_brand"
+                                            action="{!deleteHospitals}" rerender="hospitalSearcherPageBlock" status="spinner"
+                                            onComplete="closeDeleteConfirmationModal(true); return false;"/>
+                    </div>
+                </div>
+            </section>
+        </apex:form>
+        <div class="slds-backdrop slds-backdrop_open" role="presentation"></div>
+    </apex:outputPanel>
+
+    <script>
+        j$ = jQuery.noConflict();
+        j$('[id$=addHospitalPanel]').addClass('hide-modal');
+        j$('[id$=updateHospitalPanel]').addClass('hide-modal');
+        j$('[id$=deleteConfirmationPanel]').addClass('hide-modal');
+
+        function openAddHospitalModal() {
+            j$('[id$=addHospitalPanel]').removeClass('hide-modal');
+        }
+
+        function closeAddHospitalModal(shouldCloseAddHospitalModal, shouldDisplayToastMsg) {
+            if(shouldCloseAddHospitalModal){
+                j$('[id$=addHospitalPanel]').addClass('hide-modal');
+                if(shouldDisplayToastMsg){
+                    toastLaunch();
+                    let timeout = setTimeout(toastLaunch, 6000);
+                }
+            }
+        }
+
+        function openHospitalUpdateModal() {
+            j$('[id$=updateHospitalPanel]').removeClass('hide-modal');
+        }
+
+        function closeHospitalUpdateModal(shouldCloseUpdateHospitalModal, shouldDisplayToastMsg) {
+            if(shouldCloseUpdateHospitalModal){
+                j$('[id$=updateHospitalPanel]').addClass('hide-modal');
+                if(shouldDisplayToastMsg){
+                    toastLaunch();
+                    let timeout = setTimeout(toastLaunch, 6000);
+                }
+            }
+        }
+
+        function openDeleteConfirmationModal() {
+            j$('[id$=deleteConfirmationPanel]').removeClass('hide-modal');
+        }
+
+        function closeDeleteConfirmationModal(shouldDisplayToastMsg) {
+            j$('[id$=deleteConfirmationPanel]').addClass('hide-modal');
+             if(shouldDisplayToastMsg){
+                toastLaunch();
+                let timeout = setTimeout(toastLaunch, 6000);
+             }
+        }
+
+        function openToastMsg() {
+            j$('[id$=toastMsg]').removeClass('hide-modal');
+        }
+
+        function closeToastMsg() {
+            j$('[id$=toastMsg]').addClass('hide-modal');
+        }
+
+        function toastLaunch(){
+            var element = document.getElementById("ToastMessage");
+            element.classList.toggle("slds-hidden");
+        }
+    </script>
+</apex:page>

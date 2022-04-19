@@ -1,0 +1,83 @@
+<apex:page id="HOSP_DoctorSearcher" controller="HOSP_DoctorController">
+    <apex:form id="theForm">
+        <apex:actionFunction name="refreshPageSize" action="{!refreshPageSize}" status="spinnerStatus"
+                             reRender="doctorSearcherPageBlock"/>
+        <apex:pageBlock title="{!$Label.DoctorSearcher}" id="doctorSearcherPageBlock">
+            <apex:pageBlockSection >
+                <apex:inputField id="firstName" value="{!doctor.First_Name__c}" required="false" style="width: 200px;"/>
+                <apex:inputField id="lastName" value="{!doctor.Name}" style="width: 200px;"/>
+                <apex:inputField id="email" value="{!doctor.Email__c}" style="width: 200px;"/>
+                <apex:inputField id="country" value="{!doctor.Country__c}" style="width: 200px;" required="true"/>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection columns="2">
+                <apex:pageBlockSectionItem >
+                    <apex:commandButton action="{!searchDoctors}" value="{!$Label.Search}" rerender="theForm"
+                                        status="spinner" style="float: right; width: 120px; margin: 10px 0;"/>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:commandButton action="{!clearResults}" value="{!$Label.Clear}" status="spinner"
+                                        rerender="doctorSearcherPageBlock" immediate="true"
+                                        rendered="{!IF(doctors.size>0, true, false)}"
+                                        style="float: left; width: 120px; margin: 10px 0;"/>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection columns="1" rendered="{!IF(doctors.size>0, true, false)}">
+                <apex:pageBlockSectionItem >
+                    <apex:pageBlockTable value="{!doctors}" var="doctorRecord" style="width: 100%">
+                        <apex:column style="width: 5%" headerValue="{!$Label.Action}">
+                            <apex:commandLink target="_blank" action="/apex/HOSP_ViewDoctor?id={!doctorRecord.id}"
+                                              value="View">
+                                <apex:param assignTo="{!doctor.Id}" name="{!doctorRecord.Id}"
+                                            value="{!doctorRecord.Id}"/>
+                            </apex:commandLink>
+                            <apex:commandLink target="_blank"
+                                              action="/apex/HOSP_EditDoctor?id={!doctorRecord.id}" value="Edit"
+                                              style="margin-left: 10px;"/>
+                        </apex:column>
+                        <apex:column value="{!doctorRecord.First_Name__c}"/>
+                        <apex:column value="{!doctorRecord.Name}"/>
+                        <apex:column value="{!doctorRecord.Email__c}"/>
+                        <apex:column value="{!doctorRecord.Country__c}"/>
+                    </apex:pageBlockTable>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:panelGrid columns="8">
+                        <apex:selectList value="{!size}" multiselect="false" size="1">
+                            <apex:actionSupport event="onchange" action="{!refreshPageSize}"
+                                                rerender="doctorSearcherPageBlock"/>
+                            <apex:selectOptions value="{!paginationSizeOptions}"/>
+                        </apex:selectList>
+                        <apex:commandButton status="spinner" reRender="doctorSearcherPageBlock" value="{!$Label.First}"
+                                            action="{!setCon.first}" disabled="{!!setCon.hasPrevious}"
+                                            style="width: 60px;"/>
+                        <apex:commandButton status="spinner" reRender="doctorSearcherPageBlock"
+                                            value="{!$Label.Previous}"
+                                            action="{!setCon.previous}" disabled="{!!setCon.hasPrevious}"
+                                            style="width: 60px;"/>
+                        <apex:commandButton status="spinner" reRender="doctorSearcherPageBlock" value="{!$Label.Next}"
+                                            action="{!setCon.next}" disabled="{!!setCon.hasNext}" style="width: 60px;"/>
+                        <apex:commandButton status="spinner" reRender="doctorSearcherPageBlock" value="{!$Label.Last}"
+                                            action="{!setCon.last}" disabled="{!!setCon.hasNext}" style="width: 60px;"/>
+                    </apex:panelGrid>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:panelGrid columns="2">
+                        <apex:commandButton value="{!$Label.Export_to_csv}" style="float: right; width: 120px;"
+                                            action="{!pageCSV}" status="spinner"/>
+                        <apex:commandButton value="{!$Label.Export_to_xls}" style="float: right; width: 120px;"
+                                            action="{!pageXLS}" status="spinner"/>
+                    </apex:panelGrid>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+        <apex:actionStatus id="spinner">
+            <apex:facet name="start">
+                <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.80; z-index: 1000; background-color: white;">
+                </div>
+                <div style="position: fixed; left: 0; top: 0; bottom: 0; right: 0; z-index: 1001; margin: 10% 50%">
+                    <img src="{!$Resource.Spinner}"/>
+                </div>
+            </apex:facet>
+        </apex:actionStatus>
+    </apex:form>
+</apex:page>
